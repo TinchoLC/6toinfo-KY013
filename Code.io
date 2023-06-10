@@ -26,11 +26,11 @@ void setup() {
 }
 
 void loop() {
-    int readVal= analogRead(sensorPin); // La potencia obtenida del sensor del Pin
+    int readVal= analogRead(sensorPin); // La potencia obtenida del sensor del Pin // Cambiar analogRead
     double temp = SteinHH(readVal); // Utiliza la funcion para obtener la temperatura
     
     // Serial.println(readVal); // Se muestra la potencia
     Serial.println(temp);  // Se muestra la temperatura
  
-    delay(500); // CAMBIAR ESTE DELAY POR ALGO COBISTICO
+    delay(500); // Hacer con interrupciones o fuerza bruta (creo que con un timer va a ser mejor).
 }
