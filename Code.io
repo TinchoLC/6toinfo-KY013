@@ -1,9 +1,37 @@
 #include <math.h>
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+
+uint8_t analog_reference = DEFAULT;
+
 
 int sensorPin = A0; // Entrada
-double cA = 0.001129148 // Coeficience A
-double cB = 0.000234125 // Coeficience B
-double cC = 0.0000000876741 // Coeficience C
+double cA = 0.001129148; // Coeficience A
+double cB = 0.000234125; // Coeficience B
+double cC = 0.0000000876741; // Coeficience C
+
+
+//Esta función logra reemplazar a analogRead() para leer el valor analógico//
+int aRead(uint8_t pin){
+   if (pin >= 14) pin -= 14; // allow for channel or pin numbers
+   // set the analog reference (high two bits of ADMUX) and select the
+   // channel (low 4 bits).  this also sets ADLAR (left-adjust result)
+   // to 0 (the default).
+
+
+   ADMUX = (analog_reference << 6) | (pin & 0x07);
+   // without a delay, we seem to read from the wrong channel
+
+   //delay(1);
+
+   // start the conversion
+   sbi(ADCSRA, ADSC);
+   // ADSC is cleared when the conversion finishes
+   while (bit_is_set(ADCSRA, ADSC));
+   // ADC macro takes care of reading ADC register.
+   // avr-gcc implements the proper reading order: ADCL is read first.
+   return ADC;
+}
+
 
 // Esta funcion recibira la entrada (Potencia) y devolvera la temperatura
 double SteinHH(int RawADC) {
@@ -26,11 +54,11 @@ void setup() {
 }
 
 void loop() {
-    int readVal= analogRead(sensorPin); // La potencia obtenida del sensor del Pin // Cambiar analogRead
+    int readVal= aRead(sensorPin); // La potencia obtenida del sensor del Pin // Cambiar analogRead
     double temp = SteinHH(readVal); // Utiliza la funcion para obtener la temperatura
     
     // Serial.println(readVal); // Se muestra la potencia
     Serial.println(temp);  // Se muestra la temperatura
  
-    delay(500); // Hacer con interrupciones o fuerza bruta (creo que con un timer va a ser mejor).
+    delay(2000); // Hacer con interrupciones o fuerza bruta (creo que con un timer va a ser mejor).
 }
