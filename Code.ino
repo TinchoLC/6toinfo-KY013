@@ -3,7 +3,7 @@
 
 uint8_t analog_reference = DEFAULT; //
 
-int flag = 1;//Actua como bandera para que una vez por segundo se ejecute el loop
+bool flag = true; //Actua como bandera para que una vez por segundo se ejecute el loop
 int readVal; //Almacenará un valor de 0 a 1023, representando como int el nivel de voltaje
 double temp; //Almacenará el valor de temperatura final
 
