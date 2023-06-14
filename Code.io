@@ -8,9 +8,9 @@ int readVal; //Almacenará un valor de 0 a 1023, representando como int el nivel
 double temp; //Almacenará el valor de temperatura final
 
 int sensorPin = A0; // Entrada
-double cA = 0.001129148; // Coeficience A
-double cB = 0.000234125; // Coeficience B
-double cC = 0.0000000876741; // Coeficience C
+double cA = 0.001129148; // Coeficiente A
+double cB = 0.000234125; // Coeficiente B
+double cC = 0.0000000876741; // Coeficiente C
 
 
 //Esta función logra reemplazar a analogRead() para leer el valor analógico//
