@@ -57,7 +57,7 @@ double steinHH(int RawADC) {
 
 // Esta funcion configura el TIMER y lo inicia.
 void configTIMER(){
-	TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
+    TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
     TCCR1B = 0;//seteo todos los bits del registro de control del timer en 0
 	
     TCNT1 = 0;//inicializo el registro del contador en 0
