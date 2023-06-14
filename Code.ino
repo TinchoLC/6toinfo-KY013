@@ -1,21 +1,23 @@
-#include <math.h>
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
+#include <math.h> // Necesario para logaritmos
 
+// Necesarios para aRead
+#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
 uint8_t analog_reference = DEFAULT; //
 
-bool flag = true; //Actua como bandera para que una vez por segundo se ejecute el loop
-int readVal; //Almacenará un valor de 0 a 1023, representando como int el nivel de voltaje
-double temp; //Almacenará el valor de temperatura final
-
+// Necesarios para steinHH
 int sensorPin = A0; // Entrada
 double cA = 0.001129148; // Coeficiente A
 double cB = 0.000234125; // Coeficiente B
 double cC = 0.0000000876741; // Coeficiente C
 
+// Necesarios para loop
+bool flag = true; //Actua como bandera para que una vez por segundo se ejecute el loop
+int readVal; //Almacenará un valor de 0 a 1023, representando como int el nivel de voltaje
+double temp; //Almacenará el valor de temperatura final
+
 
 //Esta función logra reemplazar a analogRead() para leer el valor analógico//
 int aRead(uint8_t pin)
-
 {
    if (pin >= 14) pin -= 14; // allow for channel or pin numbers
   
@@ -53,8 +55,9 @@ double steinHH(int RawADC) {
     return Temp; // Retornamos la temperatura final
 }
 
+// Esta funcion configura el TIMER y lo inicia.
 void configTIMER(){
-	  TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
+	TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
     TCCR1B = 0;//seteo todos los bits del registro de control del timer en 0
 	
     TCNT1 = 0;//inicializo el registro del contador en 0
@@ -75,11 +78,13 @@ void loop() {
     readVal= aRead(sensorPin); // La potencia obtenida del sensor del Pin // Cambiar analogRead
     temp = steinHH(readVal); // Utiliza la funcion para obtener la temperatura
     
-    // Serial.println(readVal); // Se muestra la potencia
+    // Serial.println(readVal); // Se muestra la potencia (para pruebas)
     Serial.println(temp);  // Se muestra la temperatura
     flag = false;//Como ya se hizo una vez dentro de un segundo, se pasa el valor a 0
   }
 }
-ISR(TIMER1_COMPA_vect){ // codigo de interrupción, se ejecuta al pasar 1 segundo completo
+
+// codigo de interrupción, se ejecuta al pasar 1 segundo completo
+ISR(TIMER1_COMPA_vect){ 
 	flag = true;//pasó un segundo, se activa la flag otra vez
 }
