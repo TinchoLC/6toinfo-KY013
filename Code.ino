@@ -38,7 +38,7 @@ int aRead(uint8_t pin)
 
 
 // Esta funcion recibira la entrada (Potencia) y devolvera la temperatura
-double SteinHH(int RawADC) {
+double steinHH(int RawADC) {
     double Temp;
     double logRes;
     
@@ -53,27 +53,27 @@ double SteinHH(int RawADC) {
     return Temp; // Retornamos la temperatura final
 }
 
-
-
-void setup() {
-
-    //Configuración del TIMER 
-    TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
+void configTIMER(){
+	  TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
     TCCR1B = 0;//seteo todos los bits del registro de control del timer en 0
+	
     TCNT1 = 0;//inicializo el registro del contador en 0
     OCR1A = 0x3D08;// Valor del registro de comparación para que la frecuencia de interrupción sea 1hz
+	
     TCCR1B |= (1 << WGM12)| (1 << CS10) | (1 << CS12);//establezco mediante (1<<WGM12) al modo CTC como metodo de interrupción y con (1<<CS10) (1<<CS12) establezco el preescaler en 1024
     TIMSK1 |= (1<< OCIE1A);//Habilito la interrupción con OCR1A como registro de comparación
-  
+}
+
+void setup() {
+    configTIMER();
+	
     Serial.begin(9600); // Para poder utilizar Serial
-  	
-    
 }
 
 void loop() {
   if (flag){//Si pasó 1 segundo, se actualizan las medidas//
     readVal= aRead(sensorPin); // La potencia obtenida del sensor del Pin // Cambiar analogRead
-    temp = SteinHH(readVal); // Utiliza la funcion para obtener la temperatura
+    temp = steinHH(readVal); // Utiliza la funcion para obtener la temperatura
     
     // Serial.println(readVal); // Se muestra la potencia
     Serial.println(temp);  // Se muestra la temperatura
