@@ -1,46 +1,39 @@
-#include <math.h> // Necesario para logaritmos
+#include <math.h>
 
-// Necesarios para aRead
-#define sbi(sfr, bit) (_SFR_BYTE(sfr) |= _BV(bit))
-uint8_t analog_reference = DEFAULT; //
-
-// Necesarios para steinHH
-int sensorPin = A0; // Entrada
-double cA = 0.001129148; // Coeficiente A
-double cB = 0.000234125; // Coeficiente B
-double cC = 0.0000000876741; // Coeficiente C
-
-// Necesarios para loop
-bool flag = true; //Actua como bandera para que una vez por segundo se ejecute el loop
+int flag = 1;//Actua como bandera para que una vez por segundo se ejecute el loop
 int readVal; //Almacenará un valor de 0 a 1023, representando como int el nivel de voltaje
 double temp; //Almacenará el valor de temperatura final
 
+int sensorPin = A0; // Entrada
+double cA = 0.001129148; // Coeficience A
+double cB = 0.000234125; // Coeficience B
+double cC = 0.0000000876741; // Coeficience C
+
+
+void ADC_init()
+{
+  ADMUX = (1 << REFS0); //default Ch-0; VrefAnálogo = 5V
+  ADCSRA |= (1 << ADEN) | (0 << ADSC) | (0 << ADATE); //ADATE en 0 = auto-trigger OFF// //ADSC en 0 = Conversión no iniciada// //ADEN en 1 = ADC encendido//
+  ADCSRB = 0x00; //Todo en 0 el registro ADCSRB porque no nos es de utilidad
+}
 
 //Esta función logra reemplazar a analogRead() para leer el valor analógico//
 int aRead(uint8_t pin)
 {
-   if (pin >= 14) pin -= 14; // allow for channel or pin numbers
-  
-   // set the analog reference (high two bits of ADMUX) and select the
-   // channel (low 4 bits).  this also sets ADLAR (left-adjust result)
-   // to 0 (the default).
-   ADMUX = (analog_reference << 6) | (pin & 0x07);
-   // without a delay, we seem to read from the wrong channel
+  //Empieza la conversion
+  // Escribiendo un 1 en ADSC
+  ADCSRA |= (1 << ADSC);
 
-   delay(1);
-
-   // start the conversion
-   sbi(ADCSRA, ADSC);
-   // ADSC is cleared when the conversion finishes
-   while (bit_is_set(ADCSRA, ADSC));
-   // ADC macro takes care of reading ADC register.
-   // avr-gcc implements the proper reading order: ADCL is read first.
-   return ADC;
+ //Loopea hasta que ADSC sea 0 
+  while (ADCSRA & (1 << ADSC)); 
+  //Los primeros 8 bits se encuentran en ADCL, los otros 2 en ADCH, entonces se aplica un OR entre ADCL y (ADC)
+  ADC = (ADCL | (ADCH << 8));
+  return (ADC);
 }
 
 
 // Esta funcion recibira la entrada (Potencia) y devolvera la temperatura
-double steinHH(int RawADC) {
+double SteinHH(int RawADC) {
     double Temp;
     double logRes;
     
@@ -55,36 +48,32 @@ double steinHH(int RawADC) {
     return Temp; // Retornamos la temperatura final
 }
 
-// Esta funcion configura el TIMER y lo inicia.
-void configTIMER(){
-    TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
-    TCCR1B = 0;//seteo todos los bits del registro de control del timer en 0
-	
-    TCNT1 = 0;//inicializo el registro del contador en 0
-    OCR1A = 0x3D08;// Valor del registro de comparación para que la frecuencia de interrupción sea 1hz
-	
-    TCCR1B |= (1 << WGM12)| (1 << CS10) | (1 << CS12);//establezco mediante (1<<WGM12) al modo CTC como metodo de interrupción y con (1<<CS10) (1<<CS12) establezco el preescaler en 1024
-    TIMSK1 |= (1<< OCIE1A);//Habilito la interrupción con OCR1A como registro de comparación
-}
+
 
 void setup() {
-    configTIMER();
-	
+
+    //Configuración del TIMER 
+    TCCR1A = 0;//seteo todos los bits del registro de control del timer en 0
+    TCCR1B = 0;//seteo todos los bits del registro de control del timer en 0
+    TCNT1 = 0;//inicializo el registro del contador en 0
+    OCR1A = 0x3D08;// Valor del registro de comparación para que la frecuencia de interrupción sea 1hz
+    TCCR1B |= (1 << WGM12)| (1 << CS10) | (1 << CS12);//establezco mediante (1<<WGM12) al modo CTC como metodo de interrupción y con (1<<CS10) (1<<CS12) establezco el preescaler en 1024
+    TIMSK1 |= (1<< OCIE1A);//Habilito la interrupción con OCR1A como registro de comparación
+  
     Serial.begin(9600); // Para poder utilizar Serial
+  	ADC_init();
 }
 
 void loop() {
   if (flag){//Si pasó 1 segundo, se actualizan las medidas//
     readVal= aRead(sensorPin); // La potencia obtenida del sensor del Pin // Cambiar analogRead
-    temp = steinHH(readVal); // Utiliza la funcion para obtener la temperatura
+    temp = SteinHH(readVal); // Utiliza la funcion para obtener la temperatura
     
-    // Serial.println(readVal); // Se muestra la potencia (para pruebas)
+    // Serial.println(readVal); // Se muestra la potencia
     Serial.println(temp);  // Se muestra la temperatura
     flag = false;//Como ya se hizo una vez dentro de un segundo, se pasa el valor a 0
   }
 }
-
-// codigo de interrupción, se ejecuta al pasar 1 segundo completo
-ISR(TIMER1_COMPA_vect){ 
+ISR(TIMER1_COMPA_vect){ // codigo de interrupción, se ejecuta al pasar 1 segundo completo
 	flag = true;//pasó un segundo, se activa la flag otra vez
 }
