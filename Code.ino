@@ -37,7 +37,7 @@ double SteinHH(int RawADC) {
     double Temp;
     double logRes;
     
-    logRes = log(10000.0*(1023.0/RawADC-1); // Calculo del logaritmo de la resistencia del termistor (Tambien pasa de Potencia a Resistencia)
+    logRes = log(10000.0*(1023.0/RawADC-1)); // Calculo del logaritmo de la resistencia del termistor (Tambien pasa de Potencia a Resistencia)
     
     // 1/T = (A + B * log R + C * (log R)^3) -- Ecuacion Steinhart Hart
     Temp = 1 / (cA + cB * logRes + cC * logRes * logRes * logRes); // Aplicar ecuacion Steinhart Hart
