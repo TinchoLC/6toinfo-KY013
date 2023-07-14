@@ -6,8 +6,7 @@ La primera parte del proyecto consiste en poder leer los datos de un sensor anal
 
 ## Problemas que debemos llevar a cabo en la primera parte del proyecto
 - Linealización de la curva NTC con la ecuación Steinhart Hart ☑
-- Reemplazar AnalogRead (probablemente utilizando PORTC) ☑
+- Reemplazar AnalogRead ☑
 - Reemplazar Delay con interrupciones ☑
-- Realizar el informe en Tex 🔲
 
 En un principio podemos utilizar Serial para mostrar los datos (ya que luego cambiaremos esto), pero en un futuro debemos enviar los datos a un servidor, lo cual es la segunda parte del proyecto.
